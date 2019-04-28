@@ -1,10 +1,9 @@
 package tree;
 
 import java.util.LinkedList;
-import java.util.Stack;
 
 public class RBTree<T extends Comparable<T>> {
-	private RBTNode mRoot;
+	private RBTNode<T> mRoot;
 	public final static boolean RED = false;
 	public final static boolean BLACK = true;
 
@@ -161,7 +160,9 @@ public class RBTree<T extends Comparable<T>> {
 					brother.color = RED;
 					xnode = parent;
 					parent = parent.parent;
-				} else {
+				}
+
+				else {
 					if (brother.right == null || brother.right.color == BLACK) {
 						brother.left.color = BLACK;
 						brother.color = RED;
@@ -175,8 +176,10 @@ public class RBTree<T extends Comparable<T>> {
 					leftRotate(parent);
 					xnode = this.mRoot;
 				}
-			} else {
-				if (xnode == parent.right ){
+			}
+
+			else {
+				if (xnode == parent.right) {
 					RBTNode<T> brother = parent.left;
 					if (brother.color == RED) {
 						brother.color = BLACK;
@@ -206,6 +209,73 @@ public class RBTree<T extends Comparable<T>> {
 					}
 				}
 			}
+		}
+	}
+
+	private void RB_TRANSPLANT(RBTNode<T> u, RBTNode<T> v) {
+		if (u.parent == null)
+			this.mRoot = v;
+		else if (u.parent.left == u)
+			u.parent.left = v;
+		else
+			u.parent.right = v;
+		if(v!=null) v.parent = u.parent;
+	}
+
+	public void delete(T value) {
+		RBTNode<T> node = this.mRoot;
+		int cmp = -1;
+		while (node != null && cmp != 0) {
+			cmp = node.key.compareTo(value);
+			if (cmp < 0) {
+				node = node.right;
+			}
+			if (cmp > 0) {
+				node = node.left;
+			}
+			
+		}
+		if (node == null)
+			return;
+
+		RBTNode<T> yNode = node;
+		RBTNode<T> xNode = null;
+		RBTNode<T> parent=null;
+		boolean y_color = yNode.color;
+
+		if (node.left == null) {
+			xNode = node.right;
+			parent=node.parent;
+			RB_TRANSPLANT(node, node.right);
+		}
+
+		else if (node.right == null) {
+			xNode = node.left;
+			parent=node.parent;
+			RB_TRANSPLANT(node, node.left);
+		}
+
+		else {
+			yNode=MINIMUM(node.right);
+			y_color=yNode.color;
+			xNode=yNode.right;
+			parent=yNode.parent;
+			if(yNode.parent==node) {
+				if(xNode!=null) xNode.parent=yNode;
+			}
+			else {
+				RB_TRANSPLANT(yNode, yNode.right);
+				yNode.right=node.right;
+				yNode.right.parent=yNode;
+			}
+			RB_TRANSPLANT(node, yNode);
+			yNode.left=node.left;
+			yNode.left.parent=yNode;
+			yNode.color=node.color;
+		}
+		
+		if(y_color==BLACK) {
+			deleteFixup(xNode, parent);
 		}
 	}
 
